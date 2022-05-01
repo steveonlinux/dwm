@@ -1,0 +1,57 @@
+--- dwm.c
++++ dwm.c
+@@ -1091,12 +1150,13 @@ killclient(const Arg *arg)
+ void
+ manage(Window w, XWindowAttributes *wa)
+ {
+-	Client *c, *t = NULL;
++	Client *c, *t, *term = NULL;
+ 	Window trans = None;
+ 	XWindowChanges wc;
+ 
+ 	c = ecalloc(1, sizeof(Client));
+ 	c->win = w;
++	c->pid = winpid(w);
+ 	updatetitle(c);
+ 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
+ 		c->mon = t->mon;
+@@ -1104,7 +1164,9 @@ manage(Window w, XWindowAttributes *wa)
+ 	} else {
+ 		c->mon = selmon;
+ 		applyrules(c);
++		term = termforwin(c);
+ 	}
++
+ 	/* geometry */
+ 	c->x = c->oldx = wa->x;
+ 	c->y = c->oldy = wa->y;
+@@ -1820,6 +1885,20 @@ unmanage(Client *c, int destroyed)
+ 	Monitor *m = c->mon;
+ 	XWindowChanges wc;
+ 
++	if (c->swallowing) {
++		unswallow(c);
++		return;
++	}
++
++	Client *s = swallowingclient(c->win);
++	if (s) {
++		free(s->swallowing);
++		s->swallowing = NULL;
++		arrange(m);
++        focus(NULL);
++		return;
++	}
++
+ 	/* The server grab construct avoids race conditions. */
+ 	detach(c);
+ 	detachstack(c);
+@@ -2296,6 +2478,8 @@ main(int argc, char *argv[])
+ 		fputs("warning: no locale support\n", stderr);
+ 	if (!(dpy = XOpenDisplay(NULL)))
+ 		die("dwm: cannot open display\n");
++	if (!(xcon = XGetXCBConnection(dpy)))
++		die("dwm: cannot get xcb connection\n");
+ 	checkotherwm();
+ 	setup();
+ 	scan();
