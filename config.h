@@ -96,9 +96,7 @@ static const Layout layouts[] = {
 /* dmenu */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 /* If you are using the standard dmenu program, use the following. */
-static const char *dmenucmd[]    = { "dmenu_run", "-p", "Run: ", NULL };
-/* If you are using the dmenu-distrotube-git program, use the following for a cooler dmenu! */
-//static const char *dmenucmd[]    = { "dmenu_run", "-g", "10", "-l", "48", "-p", "Run: ", NULL }; 
+static const char *dmenucmd[]    = { "dmenu_run", "-l", "30", NULL };
 
 /* the st terminal with tabbed */
 static const char *termcmd[]     = { "kitty", NULL };
